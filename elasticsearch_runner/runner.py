@@ -8,7 +8,7 @@ from tempfile import mkdtemp
 from time import sleep, clock
 from urlparse import urlparse
 from zipfile import ZipFile
-from subprocess import Popen
+from subprocess import Popen, check_output
 import errno
 
 from psutil import Process, NoSuchProcess
@@ -25,11 +25,13 @@ TODO Faster Elasticsearch startup.
 """
 
 
-ES_DEFAULT_VERSION = '1.7.2'
+ES_DEFAULT_VERSION = '1.7.3'
 
 ES_URLS = {'1.7.2': 'https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.zip',
-           '2.0.0-rc1': 'https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.0.0-rc1/elasticsearch-2.0.0-rc1.zip'}
+           '2.0.0': 'https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.0.0/elasticsearch-2.0.0.zip'}
+
 ES_DEFAULT_URL_LOCATION = 'https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch'
+
 
 def fn_from_url(url):
     """
@@ -140,7 +142,7 @@ def parse_es_log_header(log_file, limit=200):
         if m:
             server_pid = int(m.group(1))
 
-        m = re.search('\[http.*publish_address.*:(\d+)[\]\}|\}]', line)
+        m = re.search(r'\[http.*publish_address.*:(\d+)[\]}|}]', line)
         if m:
             es_port = int(m.group(1))
 
@@ -231,38 +233,43 @@ class ElasticsearchRunner:
         else:
             # generate and insert Elasticsearch configuration file with transient data and log paths
             cluster_name = generate_cluster_name()
-            data_path = mkdtemp(prefix='%s-data-' % cluster_name, dir=self.install_path)
-
-            self.es_config = generate_config(cluster_name=cluster_name, data_path=data_path)
-            config_fn = os.path.join(self.install_path, self.version_folder, 'config',
-                                     'elasticsearch-%s.yml' % cluster_name)
-
-            with open(config_fn, 'w') as f:
-                serialize_config(f, self.es_config)
-
-            # create the log file if it doesn't exist yet. We need to open it and seek to to the end before
-            # sniffing out the configuration info from the log.
-            es_log_dir = os.path.join(self.install_path, self.version_folder, 'logs')
-            es_log_fn = os.path.join(es_log_dir, '%s.log' % cluster_name)
+            cluster_path = mkdtemp(prefix='%s-' % cluster_name, dir=self.install_path)
+            es_data_dir = os.path.join(cluster_path, "data")
+            es_config_dir = os.path.join(cluster_path, "config")
+            es_log_dir = os.path.join(cluster_path, "log")
+            self.es_config = generate_config(cluster_name=cluster_name, data_path=es_data_dir, log_path=es_log_dir)
+            config_fn = os.path.join(es_config_dir, 'elasticsearch.yml')
 
             try:
                 os.makedirs(es_log_dir)
+                os.makedirs(es_data_dir)
+                os.makedirs(es_config_dir)
             except OSError as exception:
                 if exception.errno != errno.EEXIST:
                     raise
+            with open(config_fn, 'w') as f:
+                serialize_config(f, self.es_config)
+
+            copyfile(os.path.join(package_path(), 'resources', 'embedded_logging.yml'),
+                 os.path.join(es_config_dir, 'logging.yml'))
+
+            es_log_fn = os.path.join(es_log_dir, '%s.log' % cluster_name)
+            # create the log file if it doesn't exist yet. We need to open it and seek to to the end before
+            # sniffing out the configuration info from the log.
 
             open(es_log_fn, 'a').close()
 
+            runcall = self._es_wrapper_call(os.name) + ['--path.conf=%s' % es_config_dir, '--path.logs=%s' % es_log_dir]
+            wrapper_proc = Popen(runcall)
+
             es_log_f = open(es_log_fn, 'r')
             es_log_f.seek(0, 2)
-
-            wrapper_proc = Popen(self._es_wrapper_call(os.name) + ['-Des.config=%s' % config_fn])
 
             # watch the log
             server_pid, es_port = parse_es_log_header(es_log_f)
 
             if not server_pid:
-                logging.error('Server PID not detected ...')
+                logging.error('Server PID not detected ... runcall was %s' % runcall)
 
             if not es_port:
                 logging.error('Server http port not detected ...')
@@ -354,7 +361,6 @@ class ElasticsearchRunner:
         if self.es_state.port is None:
             logging.warn('Elasticsearch runner not properly started ...')
             return self
-        
         end_time = clock() + timeout
         health_resp = requests.get('http://localhost:%d/_cluster/health' % self.es_state.port)
         health_data = json.loads(health_resp.text)

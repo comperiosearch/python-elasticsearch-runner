@@ -95,7 +95,7 @@ class TestElasticsearchRunner(TestCase):
                          ['/bin/sh', os.path.sep.join(['fakepath', runner.version_folder, 'bin', 'elasticsearch'])])
 
     def test_run_version2(self):
-        es_version = '2.0.0-rc1'
+        es_version = '2.1.0'
         self.runner = ElasticsearchRunner(version=es_version)
         self.runner.install()
         self.runner.run()

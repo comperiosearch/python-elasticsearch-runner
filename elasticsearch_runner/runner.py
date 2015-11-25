@@ -8,7 +8,7 @@ from tempfile import mkdtemp
 from time import sleep, clock
 from urlparse import urlparse
 from zipfile import ZipFile
-from subprocess import Popen, check_output
+from subprocess import Popen
 import errno
 
 from psutil import Process, NoSuchProcess
@@ -25,7 +25,7 @@ TODO Faster Elasticsearch startup.
 """
 
 
-ES_DEFAULT_VERSION = '1.7.3'
+ES_DEFAULT_VERSION = '2.1.0'
 
 ES_URLS = {'1.7.2': 'https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.zip',
            '2.0.0': 'https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.0.0/elasticsearch-2.0.0.zip'}
@@ -236,7 +236,7 @@ class ElasticsearchRunner:
         else:
             # generate and insert Elasticsearch configuration file with transient data and log paths
             cluster_name = generate_cluster_name()
-            cluster_path = mkdtemp(prefix='%s-' % cluster_name, dir=self.install_path)
+            cluster_path = mkdtemp(prefix='%s-%s-' % (self.version, cluster_name), dir=self.install_path)
             es_data_dir = os.path.join(cluster_path, "data")
             es_config_dir = os.path.join(cluster_path, "config")
             es_log_dir = os.path.join(cluster_path, "log")

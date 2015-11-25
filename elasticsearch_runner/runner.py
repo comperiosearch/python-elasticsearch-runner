@@ -31,7 +31,7 @@ ES_URLS = {'1.7.2': 'https://download.elastic.co/elasticsearch/elasticsearch/ela
            '2.0.0': 'https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.0.0/elasticsearch-2.0.0.zip'}
 
 ES_DEFAULT_URL_LOCATION = 'https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch'
-
+ES2_DEFAULT_URL_LOCATION= 'https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/'
 
 def fn_from_url(url):
     """
@@ -206,10 +206,13 @@ class ElasticsearchRunner:
         :return: The instance called on.
         """
         if self.version in ES_URLS:
-            es_archive_fn = download_file(ES_URLS[self.version], self.install_path)
+            download_url = ES_URLS[self.version]
         else:
-            download_url = "%s-%s.zip" %  (ES_DEFAULT_URL_LOCATION, self.version)
-            es_archive_fn = download_file(download_url, self.install_path)
+            if self.version.startswith('1'):
+                download_url = "%s-%s.zip" % (ES_DEFAULT_URL_LOCATION, self.version)
+            else:
+                download_url = "%s%s/elasticsearch-%s.zip" % (ES2_DEFAULT_URL_LOCATION, self.version, self.version)
+        es_archive_fn = download_file(download_url, self.install_path)
 
         if not os.path.exists(os.path.join(self.install_path, self.version_folder)):
             with ZipFile(es_archive_fn, "r") as z:
@@ -259,7 +262,7 @@ class ElasticsearchRunner:
 
             open(es_log_fn, 'a').close()
 
-            runcall = self._es_wrapper_call(os.name) + ['--path.conf=%s' % es_config_dir, '--path.logs=%s' % es_log_dir]
+            runcall = self._es_wrapper_call(os.name) + ['-Des.path.conf=%s' % es_config_dir, '-Des.path.logs=%s' % es_log_dir]
             wrapper_proc = Popen(runcall)
 
             es_log_f = open(es_log_fn, 'r')

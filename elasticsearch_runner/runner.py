@@ -167,6 +167,8 @@ class ElasticsearchRunner:
 
     def __init__(self, install_path=None, transient=False, version=None):
         """
+        :param version: Elasticsearch version to run. Defaults to 2.1.0
+        :type version: string
         :param install_path: The path where the Elasticsearch software package and data storage will be kept.
         If no install path set, installs into APPDATA (windows)or  HOME/.elasticsearch_runner (other)
         Install_path can be provided as the environment variable 'elasticsearch-runner-install-path'

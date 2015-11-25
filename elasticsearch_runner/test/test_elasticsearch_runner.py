@@ -2,7 +2,7 @@ import os
 import io
 from unittest import TestCase
 
-from pandas import json
+import json
 import requests
 
 from elasticsearch_runner.runner import ElasticsearchRunner, process_exists, parse_es_log_header

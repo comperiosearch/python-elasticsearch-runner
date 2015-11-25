@@ -1,4 +1,7 @@
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from cStringIO import StringIO
 from unittest import TestCase
 
 import yaml

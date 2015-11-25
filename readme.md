@@ -32,6 +32,10 @@ es = Elasticsearch(hosts=['localhost:%d' % es_runner.es_state.port])
 
 
 ### Some details
+
+Tested on python 2.7
+
+
 The elasticsearch runner accepts parameters for elasticsearch version and install path. Default version is 2.1.0
 The install path is where the Elasticsearch software package and data storage will be kept.
 If no install path set, installs into the APPDATA folder on windows or  HOME/.elasticsearch_runner on other platforms.

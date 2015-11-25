@@ -6,10 +6,16 @@ import re
 from shutil import copyfile, rmtree
 from tempfile import mkdtemp
 from time import sleep, clock
-from urlparse import urlparse
 from zipfile import ZipFile
 from subprocess import Popen
 import errno
+import sys
+PY3 = sys.version_info > (3,)
+if PY3:
+    import urllib.request, urllib.parse, urllib.error
+    import urllib.parse
+else:
+    from urlparse import urlparse
 
 from psutil import Process, NoSuchProcess
 import requests
@@ -42,8 +48,12 @@ def fn_from_url(url):
     :rtype : str|unicode
     :return: url filename part
     """
-    parse = urlparse(url)
 
+
+    if PY3:
+        parse = urllib.parse.urlparse(url)
+    else:
+        parse = urlparse(url)
     return os.path.basename(parse.path)
 
 

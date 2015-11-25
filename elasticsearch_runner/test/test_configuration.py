@@ -1,4 +1,7 @@
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from unittest import TestCase
 
 import yaml
@@ -11,7 +14,7 @@ __author__ = 'alynum'
 class TestConfiguration(TestCase):
     def test_generate_config(self):
         self.assertEqual({
-            'marvel': {'agent': {'disabled'}},
+            'marvel': {'agent': {'enabled': 'false'}},
             'index': {
                 'number_of_shards': 1,
                 'number_of_replicas': 0,

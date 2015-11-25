@@ -29,3 +29,18 @@ The runner instance can then be queried for the port number when connecting:
 es = Elasticsearch(hosts=['localhost:%d' % es_runner.es_state.port])
 ```
 
+
+
+### Some details
+Should run with python 2.7. 3.3 and 3.4
+By default, elasticsearch version 2.1.0 is used, and everything is installed into HOME/.elasticsearch_runner (most systems) or APP_DATA/elasticsearch_runner (windows) folder.
+
+
+```python
+es_runner = ElasticsearchRunner(version=1.0.0, install_path=/var/test/)
+```
+
+The elasticsearch runner accepts parameters for elasticsearch version and install path. 
+The install path is where the Elasticsearch software package and data storage will be kept.
+Install path can also be provided as the environment variable 'elasticsearch-runner-install-path', and if set will override the install_path parameter.
+

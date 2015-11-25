@@ -1,4 +1,4 @@
-## Elasticsearch test runner
+## Elasticsearch test runner [![Build Status](https://travis-ci.org/comperiosearch/python-elasticsearch-runner.svg)](https://travis-ci.org/comperiosearch/python-elasticsearch-runner)
 
 The python-elasticsearch-runner contains a standalone Python runner for Elasticsearch. This is intended
 for transient and lightweight usage such as small integration tests.

@@ -32,7 +32,7 @@ es = Elasticsearch(hosts=['localhost:%d' % es_runner.es_state.port])
 
 
 ### Some details
-
+Should run with python 2.7. 3.3 and 3.4
 By default, elasticsearch version 2.1.0 is used, and everything is installed into HOME/.elasticsearch_runner (most systems) or APP_DATA/elasticsearch_runner (windows) folder.
 
 

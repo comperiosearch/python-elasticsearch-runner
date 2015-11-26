@@ -231,7 +231,7 @@ class ElasticsearchRunner:
                 z.extractall(self.install_path)
 
         # insert basic config file
-        copyfile(os.path.join(package_path(), 'resources', 'embedded_elasticsearch.yml'),
+        copyfile(os.path.join(package_path(), 'elasticsearch_runner', 'resources', 'embedded_elasticsearch.yml'),
                  os.path.join(self.install_path, self.version_folder, 'config', 'elasticsearch.yml'))
 
         return self
@@ -265,7 +265,7 @@ class ElasticsearchRunner:
             with open(config_fn, 'w') as f:
                 serialize_config(f, self.es_config)
 
-            copyfile(os.path.join(package_path(), 'resources', 'embedded_logging.yml'),
+            copyfile(os.path.join(package_path(), 'elasticsearch_runner', 'resources', 'embedded_logging.yml'),
                  os.path.join(es_config_dir, 'logging.yml'))
 
             es_log_fn = os.path.join(es_log_dir, '%s.log' % cluster_name)
